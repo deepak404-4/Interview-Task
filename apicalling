@@ -30,3 +30,48 @@ object ApiClient {
 }
 
 ------>   STEP 3
+
+Crreate a viewModel with flow
+
+import android.util.Log
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.calvintechnoliges.simpleapi.api.ApiClient
+import com.calvintechnoliges.simpleapi.api.User
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+
+class MainViewModel:ViewModel() {
+    private val _users = MutableStateFlow<List<User>>(emptyList())
+    val users: StateFlow<List<User>> = _users
+
+    init {
+        getUsers()
+    }
+
+    private fun getUsers(){
+        viewModelScope.launch {
+           try {
+               val users = ApiClient.apiService.getUsers()
+               _users.value = users
+           } catch (e:Exception){
+               Log.e("MainViewModel","Error fetching users",e)
+           }
+        }
+    }
+
+}
+
+------>   STEP 4 
+Show Data on List
+
+val viewModel: MainViewModel = viewModel()
+val user by viewModel.users.collectAsState()
+
+LazyColumn {
+           items(user){
+               LUi(name = it.name, email = it.email)
+           }
+       }
+
